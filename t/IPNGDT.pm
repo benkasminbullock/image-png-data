@@ -21,9 +21,9 @@ our @EXPORT = (qw/
 use Test::More;
 use Image::PNG::Const ':all';
 use Image::PNG::Libpng ':all';
-use Image::PNG::Util ':all';
+use Image::PNG::Data ':all';
 
-push @EXPORT, (@Test::More::EXPORT, @Image::PNG::Const::EXPORT_OK, @Image::PNG::Libpng::EXPORT_OK, @Image::PNG::Util::EXPORT_OK);
+push @EXPORT, (@Test::More::EXPORT, @Image::PNG::Const::EXPORT_OK, @Image::PNG::Libpng::EXPORT_OK, @Image::PNG::Data::EXPORT_OK);
 
 my $builder = Test::More->builder;
 binmode $builder->output,         ":encoding(utf8)";
@@ -41,7 +41,7 @@ sub import
     Test::More->import ();
     Image::PNG::Const->import (':all');
     Image::PNG::Libpng->import (':all');
-    Image::PNG::Util->import (':all');
+    Image::PNG::Data->import (':all');
 
     IPNGDT->export_to_level (1);
 }

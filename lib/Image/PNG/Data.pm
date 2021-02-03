@@ -6,6 +6,7 @@ use utf8;
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw/
+    alpha_used
     any2gray8
     bwpng
     rgb2gray
@@ -21,10 +22,16 @@ XSLoader::load ('Image::PNG::Data', $VERSION);
 use Image::PNG::Libpng ':all';
 use Image::PNG::Const ':all';
 
-
 # White background for either RGB or grayscale.
 
 my %white = (red => 0xff, green => 0xff, blue => 0xff, gray => 0xff);
+
+sub alpha_used
+{
+    my ($png) = @_;
+    my $data = png_to_data ($png);
+    return alpha_used_data ($data);
+}
 
 sub any2gray8
 {
@@ -188,48 +195,15 @@ sub rgb2gray
     return $wpng;
 }
 
-my $slowpoke = 0;
+# Turn an Image::PNG::Libpng structure into an Image::PNG::Data
+# structure.
 
-# Private
-
-sub alpha_used
+sub png_to_data
 {
-    my ($png, $rows) = @_;
-    my $rowbytes = $png->get_rowbytes ();
-    my $ihdr = $png->get_IHDR ();
-    my $bit_depth = $ihdr->{bit_depth};
-    my $channels = color_type_channels ($ihdr->{color_type});
-    if ($bit_depth != 8) {
-	croak "Module doesn't handle bit depth of 16";
-    }
-    if ($slowpoke) {
-	my $n = $rowbytes / $channels;
-	my $b = 'C' x $n;
-	croak "$rowbytes is not a multiple of $channels" unless $n == int ($n);
-	for my $row (@$rows) {
-	    for my $i (0..$n-1) {
-		my $pixel = substr ($row, $i * $channels, $channels);
-		my @bytes = unpack ($b, $pixel);
-		#print "@bytes\n";
-		my $alpha = $bytes[-1];
-		if ($alpha != 255) {
-		    # Sorry, Donny Osmond, one bad apple DOES spoil the
-		    # whole bunch.
-		    return 1;
-		}
-	    }
-	}
-	return 0;
-    }
-    else {
-	my $split = split_alpha ($png);
-	my $alpha = $split->{alpha};
-	if ($alpha =~ /[^\xFF]/) {
-	    #print "alpha channel not all opaque.\n";
-	    return 1;
-	}
-	return 0;
-    }
+    my ($png) = @_;
+    my ($png_s, $png_i) = get_internals ($png);
+    my $data = from_png ($png_s, $png_i);
+    return $data;
 }
 
 # Public

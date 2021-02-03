@@ -1,14 +1,62 @@
 typedef struct {
-
+    png_struct * png;
+    png_info * info;
+    png_uint_32 width;
+    png_uint_32 height;
+    int bit_depth;
+    int color_type;
+    int interlace_type;
+    int channels;
+    png_uint_32 rowbytes;
+    png_bytepp rows;
 }
 image_png_data_t;
 
 static int
-perl_error_handler (const char * file, int line_number, const char * msg, ...)
+image_png_data_alpha_used (image_png_data_t * data)
 {
-    va_list args;
-    va_start (args, msg);
-    vcroak (msg, & args);
-    va_end (args);
+    int i;
+    int bytes;
+    int max;
+    int ch = data->channels;
+
+    if (data->bit_depth == 8) {
+	bytes = 1;
+	max = 0xFF;
+    }
+    else if (data->bit_depth == 16) {
+	bytes = 2;
+	max = 0xFFFF;
+    }
+    else {
+	croak ("Alpha channel not possible in image with bit depth %d",
+	       data->bit_depth);
+    }
+    if ((data->color_type & PNG_COLOR_MASK_ALPHA) == 0) {
+	croak ("This PNG has no alpha channel");
+    }
+    
+    for (i = 0; i < data->height; i++) {
+	int j;
+	png_bytep row;
+	row = data->rows[i];
+	for (j = 0; j < data->width; j++) {
+	    int q;
+	    int alpha = 0;
+	    int byte;
+	    q = bytes * ch * j;
+	    for (byte = 0; byte < bytes; byte++) {
+		alpha *= 256;
+		alpha += row[q + bytes * (ch - 1) + byte];
+	    }
+	    if (alpha != max) {
+		/* At least one pixel has a non-opaque value for alpha,
+		   so the alpha channel is being used. */
+		return 1;
+	    }
+	}
+    }
+    /* We looked at all of the alpha pixels, and they were all equal
+       to "max", so the alpha channel is unused. */
     return 0;
 }

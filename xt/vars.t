@@ -10,6 +10,8 @@ binmode $builder->todo_output,    ":utf8";
 binmode STDOUT, ":encoding(utf8)";
 binmode STDERR, ":encoding(utf8)";
 use Test::Vars;
+use lib "$Bin/../blib/lib";
+use lib "$Bin/../blib/arch";
 chdir "$Bin/.." or die $!;
 all_vars_ok();
 done_testing ();

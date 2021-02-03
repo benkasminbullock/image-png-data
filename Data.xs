@@ -2,6 +2,9 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "ppport.h"
+#include <png.h>
+
+#define UNUSED_ZERO_ARG 0
 
 #include "image-png-data-perl.c"
 
@@ -11,6 +14,28 @@ MODULE=Image::PNG::Data PACKAGE=Image::PNG::Data
 
 PROTOTYPES: DISABLE
 
-BOOT:
-	/* Image__PNG__Data_error_handler = perl_error_handler; */
+Image::PNG::Data
+from_png (png, info)
+	SV * png;
+	SV * info;
+CODE:
+	Newxz(RETVAL, 1, image_png_data_t);
+	RETVAL->png = INT2PTR (png_struct *, SvIV (png));
+	RETVAL->info = INT2PTR (png_info *, SvIV (info));
+	png_get_IHDR (RETVAL->png, RETVAL->info, & RETVAL->width,
+		      & RETVAL->height, & RETVAL->bit_depth,
+		      & RETVAL->color_type, & RETVAL->interlace_type,
+		      UNUSED_ZERO_ARG, UNUSED_ZERO_ARG);
+	RETVAL->channels = png_get_channels (RETVAL->png, RETVAL->info);
+	RETVAL->rowbytes = png_get_rowbytes (RETVAL->png, RETVAL->info);
+	RETVAL->rows = png_get_rows (RETVAL->png, RETVAL->info);
+OUTPUT:
+	RETVAL
 
+int
+alpha_used_data (data)
+	Image::PNG::Data data
+CODE:
+	RETVAL = image_png_data_alpha_used (data);
+OUTPUT:
+	RETVAL
