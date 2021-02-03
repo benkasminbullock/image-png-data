@@ -17,7 +17,7 @@ This method was added in version [% version %] of the module.
 
 =head1 NAME
 
-[% info.colon %] - abstract here.
+[% info.colon %] - manipulate the image data part of PNGs
 
 =head1 SYNOPSIS
 
@@ -31,6 +31,93 @@ corresponding to L<git commit [% commit.commit %]|[% info.repo
 
 =head1 DESCRIPTION
 
+This module provides various utilities for manipulating and testing
+the image data part of a PNG image. This is a companion module to
+L<Image::PNG::Libpng> by the same authors.
+
 =head1 FUNCTIONS
+
+=head2 alpha_used
+
+Is the alpha channel in the image used or is it just completely opaque?
+
+=head2 any2gray8
+
+    my $wpng = any2gray8 ("any.png");
+
+Convert any type of PNG file whatsoever into a bit-depth 8 grayscale
+image without an alpha channel (PNG_COLOR_TYPE_GRAY). The return value
+is a writing structure as made by L</create_write_struct>.
+
+Currently the L</tRNS> chunk is ignored by this.
+
+By default the alpha channel is set to either the value of the
+L</bKGD> chunk if there is one, or white if not. You can set another
+background using the option C<bkgd>:
+
+    my $wpng = any2gray8 ('any.png', bkgd => {red => 255, green => 0, blue => 99});
+
+This will of course be ignored if F<any.png> does not contain an alpha
+channel. RGB to gray conversion is done using L</set_rgb_to_gray> with
+the default values.
+
+This function is not supported for versions of libpng earlier than
+1.6.14.
+
+=head2 bwpng
+
+    my $png = bwpng (\@rows, sq => 20);
+
+Convert boolean-style data into a black and white PNG.
+
+    bwpng (\@rows, black => '#CFF', white => '#C00');
+
+[% FOR option IN options.bwpng %]
+[% option %]
+[% END %]
+
+=head2 rgb2gray
+
+    my $gray_png = rgb2gray ('colorful.png');
+
+Convert RGB to gray.
+
+Options:
+
+[% FOR option IN options.rgb2gray %]
+[% option %]
+[% END %]
+
+=head2 rmalpha
+
+Remove the alpha channel of the PNG.
+
+=head2 split_alpha
+
+Copy from IPL.
+
+=head1 DEPENDENCIES
+
+=over
+
+=item L<Image::PNG::Libpng>
+
+=back
+
+=head1 SEE ALSO
+
+=head2 Online PNG tools
+
+=over
+
+=item L<https://onlinepngtools.com/convert-png-to-grayscale>
+
+Converts your PNG to grayscale via JavaScript. This actually resizes
+the image to the size of its box, but you can save the image with the
+Save as... link and you get the original size back.
+
+=item L<https://pinetools.com/grayscale-image>
+
+=back
 
 [% INCLUDE "author" %]

@@ -27,8 +27,14 @@ WriteMakefile (
             bugtracker => {
 		web => "$repo/issues",
 	    },
+	    no_index => {
+#		directory => ['tmpl', 'build', 'inc'],
+		file => ['t/IPNGDT.pm'],
+	    },
+
 #	    homepage => 'http://',
         },
+	
     },
     MIN_PERL_VERSION => '5.006001',
     OBJECT => 'Data.o',

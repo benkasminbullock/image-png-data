@@ -7,6 +7,7 @@ use Perl::Build qw/get_info get_commit/;
 use Perl::Build::Pod ':all';
 use Deploy qw/do_system older/;
 use Getopt::Long;
+use JSON::Parse 'read_json';
 my $ok = GetOptions (
     'force' => \my $force,
     'verbose' => \my $verbose,
@@ -27,11 +28,14 @@ my $pod = 'Data.pod';
 my $input = "$Bin/lib/Image/PNG/$pod.tmpl";
 my $output = "$Bin/lib/Image/PNG/$pod";
 
+my $options = read_json ("$Bin/options.json");
+
 # Template toolkit variable holder
 
 my %vars = (
     info => $info,
     commit => $commit,
+    options => $options,
 );
 
 my $tt = Template->new (
