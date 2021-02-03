@@ -209,12 +209,12 @@ sub alpha_used
 	for my $row (@$rows) {
 	    for my $i (0..$n-1) {
 		my $pixel = substr ($row, $i * $channels, $channels);
-	    my @bytes = unpack ($b, $pixel);
+		my @bytes = unpack ($b, $pixel);
 		#print "@bytes\n";
-	    my $alpha = $bytes[-1];
+		my $alpha = $bytes[-1];
 		if ($alpha != 255) {
 		    # Sorry, Donny Osmond, one bad apple DOES spoil the
-		# whole bunch.
+		    # whole bunch.
 		    return 1;
 		}
 	    }

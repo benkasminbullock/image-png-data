@@ -90,7 +90,12 @@ Options:
 
 =head2 rmalpha
 
-Remove the alpha channel of the PNG.
+    my $png = rmalpha ('file.png');
+
+Remove the alpha channel of the PNG. If the input PNG has a color type
+other than C<GRAY_ALPHA> or C<RGB_ALPHA>, a warning is printed and the
+return value is undefined. The return value is an Image::PNG::Libpng
+structure for writing with the alpha channel data removed.
 
 =head2 split_alpha
 
