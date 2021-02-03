@@ -2,6 +2,7 @@
 use warnings;
 use strict;
 use FindBin '$Bin';
+use lib "$Bin/copied/lib";
 use Perl::Build;
 
 my %build = (
