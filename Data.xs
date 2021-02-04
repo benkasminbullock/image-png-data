@@ -2,6 +2,13 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "ppport.h"
+
+/* There is some kind of collision between a file included by "perl.h"
+   and "png.h" for very old versions of libpng, like the one used on
+   Ubuntu Linux. */
+
+#define PNG_SKIP_SETJMP_CHECK
+
 #include <png.h>
 
 #define UNUSED_ZERO_ARG 0
