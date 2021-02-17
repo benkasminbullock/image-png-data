@@ -6,7 +6,7 @@ use utf8;
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw/
-    alpha_used
+    alpha_unused
     any2gray8
     bwpng
     rgb2gray
@@ -15,7 +15,7 @@ our @EXPORT_OK = qw/
 our %EXPORT_TAGS = (
     all => \@EXPORT_OK,
 );
-our $VERSION = '0.00_01';
+our $VERSION = '0.00_02';
 require XSLoader;
 XSLoader::load ('Image::PNG::Data', $VERSION);
 
@@ -26,11 +26,11 @@ use Image::PNG::Const ':all';
 
 my %white = (red => 0xff, green => 0xff, blue => 0xff, gray => 0xff);
 
-sub alpha_used
+sub alpha_unused
 {
     my ($png) = @_;
     my $data = png_to_data ($png);
-    return alpha_used_data ($data);
+    return alpha_unused_data ($data);
 }
 
 sub any2gray8
@@ -100,14 +100,177 @@ sub any2gray8
     return $wpng;
 }
 
+sub poo
+{
+my ($data) = @_;
+    my $type;
+    for (@$data) {
+	if (ref $_ eq 'ARRAY') {
+	    if ($type && $type ne '2d') {
+		carp "bwpng's argument has mixed rows";
+		return undef;
+	    }
+	    $type = '2d';
+	}
+	if (ref $_ eq '') {
+	    $type = 'string';
+	}
+    }
+    if ($type ne '2d' && $type ne 'string') {
+	carp "bwpng doesn't know what to do with this input";
+	return undef;
+    }
+
+}
+
 sub bwpng
 {
+    my ($data, %o) = @_;
+    if (ref $data ne 'ARRAY') {
+	carp "bwpng needs an array reference as its argument";
+	return undef;
+    }
+    my $png = create_write_struct ();
+    my $ybits = scalar (@$data);
+    my $xbits = 0;
+    for (@$data) {
+	my $l = length ($_) * 8;
+	if ($l > $xbits)  {
+	    $xbits = $l;
+	}
+    }
+    my $ymultiple = 1;
+    my $xmultiple = 1;
+    if ($o{yblock}) {
+	$ymultiple *= $o{yblock};
+    }
+    if ($o{xblock}) {
+	$xmultiple *= $o{xblock};
+    }
+    if ($o{block}) {
+	$xmultiple *= $o{block};
+	$ymultiple *= $o{block};
+    }
+    my $color_type = PNG_COLOR_TYPE_GRAY;
+    my $bit_depth = 1;
+    my $palette;
+    if ($o{fg} || $o{bg}) {
+	$palette = 1;
+	$color_type = PNG_COLOR_TYPE_PALETTE;
+    }
+    my $height = $ymultiple * $ybits;
+    my $width = $xmultiple * $xbits;
+    $png->set_IHDR ({height => $height, width => $width,
+		     bit_depth => $bit_depth, color_type => $color_type});
+    if ($o{invert}) {
+	if ($palette) {
+	    my $bg = $o{bg};
+	    $o{bg} = $o{fg};
+	    $o{fg} = $bg;
+	}
+	else {
+	    $png->set_invert_mono ();
+	}
+    }
+    if ($o{lsb_left}) {
+	$png->set_packswap ();
+    }
+    if ($palette) {
+	$png->set_PLTE ([color ($o{bg}), color ($o{fg})]);
+    }
+    if ($xmultiple > 1 || $ymultiple > 1) {
+	my $rows = multiply_rows ($data, $xbits, $xmultiple, $ymultiple);
+	$png->set_rows ($rows);
+    }
+    else {
+	$png->set_rows ($data);
+    }
+    return $png;
+}
 
+sub multiply_rows
+{
+    my ($data, $xbits, $xm, $ym) = @_;
+    my @mrows;
+    # The number of bytes in each row of the data.
+    my $xbytes = $xbits / 8;
+    # The number of bytes in each row of the output.
+    my $mbytes = $xbytes * $xm;
+    my $ybits = scalar (@$data);
+    for my $y (0..$ybits-1) {
+	my $row = $data->[$y];
+	my @xrow = (0) x $mbytes;
+	for my $byte (0..$xbytes-1) {
+	    my $char = ord (substr ($row, $byte, 1));
+	    for my $bit (0..7) {
+		my $x = $byte*8 + $bit;
+		# The reason for the 7-$bit in the following is that
+		# the default for pngs with bit depths less than 8 is
+		# that the leftmost pixels correspond to the most
+		# significant bits, and the rightmost pixels
+		# correspond to the least significant bits.
+		my $pixel = ($char >> (7-$bit)) & 1;
+		if ($pixel) {
+		    for my $c (0..$xm - 1) {
+			# Offset of the pixel in the output in bits.
+			my $offset = $x*$xm + $c;
+			my $cbyte = int ($offset / 8);
+			my $cbit = $offset % 8;
+			# See comment above my $pixel for why the 7
+			# here.
+			$xrow[$cbyte] |= 1<<(7-$cbit);
+		    }
+		}
+	    }
+	}
+	my $xrow;
+	for (@xrow) {
+	    $xrow .= chr ($_);
+	}
+	for (0..$ym-1) {
+	    push @mrows, $xrow;
+	}
+    }
+    return \@mrows;
+}
+
+
+sub color
+{
+    my ($color) = @_;
+    if (ref $color eq 'HASH') {
+	return $color;
+    }
+    return css2color ($color);
+}
+
+sub oneletter
+{
+    my ($letter) = @_;
+    return hex ($letter . $letter);
 }
 
 sub css2color
 {
-
+    my ($color) = @_;
+    my $orig = $color;
+    $color =~ s/^#//;
+    my %color;
+    if (length ($color) == 3) {
+	my ($r, $g, $b) = split '', $color;
+	$color{red} = oneletter ($r);
+	$color{green} = oneletter ($g);
+	$color{blue} = oneletter ($b);
+    }
+    elsif (length ($color) == 6) {
+	$color{red} = hex (substr ($color, 0, 2));
+	$color{green} = hex (substr ($color, 2, 4));
+	$color{blue} = hex (substr ($color, 4, 6));
+    }
+    else {
+	carp "Failed to deal with CSS color '$orig'";
+    }
+    return \%color;
 }
 
 sub color2css
@@ -254,7 +417,5 @@ sub vmsg
     my (undef, $file, $line) = @caller;
     print "$file:$line: $msg\n";
 }
-
-
 
 1;

@@ -39,10 +39,10 @@ CODE:
 OUTPUT:
 	RETVAL
 
-int
-alpha_used_data (data)
+SV *
+alpha_unused_data (data)
 	Image::PNG::Data data
 CODE:
-	RETVAL = image_png_data_alpha_used (data);
+	RETVAL = image_png_data_alpha_unused (data);
 OUTPUT:
 	RETVAL

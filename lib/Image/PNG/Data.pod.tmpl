@@ -37,12 +37,14 @@ L<Image::PNG::Libpng> by the same authors.
 
 =head1 FUNCTIONS
 
-=head2 alpha_used
+=head2 alpha_unused
 
-    if (alpha_used (read_png_file ('some.png')) {
+    if (alpha_unused (read_png_file ('some.png')) {
 
-Is the alpha channel in the image used or not? This function returns a
-true value if the PNG has an alpha channel and it is not being used.
+Is the alpha channel in the image unused? This function returns a true
+value if the PNG has an alpha channel and it is not being used. If the
+image doesn't have an alpha channel it returns the undefined value. If
+it has an alpha channel and it is being used it returns 0.
 
 =head2 any2gray8
 

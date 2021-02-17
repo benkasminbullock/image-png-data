@@ -3,13 +3,13 @@ use lib "$Bin";
 use IPNGDT;
 
 my @filex = (
-    ['luv.png', 1],
-    ['blue.png', 0],
+    ['luv.png', 0],
+    ['blue.png', 1],
 );
 
 for (@filex) {
     cmp_ok (
-	alpha_used (
+	alpha_unused (
 	    read_png_file ("$Bin/$_->[0]")
 	), '==', $_->[1],
 	"Got expected $_->[1] for $_->[0]"

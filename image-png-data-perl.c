@@ -12,8 +12,8 @@ typedef struct {
 }
 image_png_data_t;
 
-static int
-image_png_data_alpha_used (image_png_data_t * data)
+static SV *
+image_png_data_alpha_unused (image_png_data_t * data)
 {
     int i;
     int bytes;
@@ -33,7 +33,7 @@ image_png_data_alpha_used (image_png_data_t * data)
 	       data->bit_depth);
     }
     if ((data->color_type & PNG_COLOR_MASK_ALPHA) == 0) {
-	croak ("This PNG has no alpha channel");
+	return &PL_sv_undef;
     }
     
     for (i = 0; i < data->height; i++) {
@@ -52,11 +52,17 @@ image_png_data_alpha_used (image_png_data_t * data)
 	    if (alpha != max) {
 		/* At least one pixel has a non-opaque value for alpha,
 		   so the alpha channel is being used. */
-		return 1;
+		return newSViv(0);
 	    }
 	}
     }
     /* We looked at all of the alpha pixels, and they were all equal
        to "max", so the alpha channel is unused. */
-    return 0;
+    return newSViv (1);
+}
+
+static void
+image_png_data_bwpng (image_png_data_t * data)
+{
+
 }
