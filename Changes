@@ -1,6 +1,7 @@
 Revision history for Perl module Image::PNG::Data
 
-0.00_02 2021-02-03
+0.01 2021-04-26
 
-- Initial version
+- Initial version (was previously Image::PNG::Util)
+
 

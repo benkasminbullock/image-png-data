@@ -9,13 +9,18 @@ our @EXPORT_OK = qw/
     alpha_unused
     any2gray8
     bwpng
+    pngback
+    pngpixelate
+    pngmono
     rgb2gray
     rmalpha
 /;
+
 our %EXPORT_TAGS = (
     all => \@EXPORT_OK,
 );
-our $VERSION = '0.00_02';
+
+our $VERSION = '0.01';
 require XSLoader;
 XSLoader::load ('Image::PNG::Data', $VERSION);
 
@@ -100,27 +105,16 @@ sub any2gray8
     return $wpng;
 }
 
-sub poo
+sub pngmono
 {
-my ($data) = @_;
-    my $type;
-    for (@$data) {
-	if (ref $_ eq 'ARRAY') {
-	    if ($type && $type ne '2d') {
-		carp "bwpng's argument has mixed rows";
-		return undef;
-	    }
-	    $type = '2d';
-	}
-	if (ref $_ eq '') {
-	    $type = 'string';
-	}
-    }
-    if ($type ne '2d' && $type ne 'string') {
-	carp "bwpng doesn't know what to do with this input";
-	return undef;
-    }
+}
 
+sub pngback
+{
+}
+
+sub pngpixelate
+{
 }
 
 sub bwpng

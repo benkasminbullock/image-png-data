@@ -67,5 +67,5 @@ my $qr = <<EOF;
 *     * **  * *   ***
 ******* * *  ****    
 EOF
-
+ok (1);
 done_testing ();

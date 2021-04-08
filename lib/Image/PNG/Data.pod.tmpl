@@ -35,6 +35,9 @@ This module provides various utilities for manipulating and testing
 the image data part of a PNG image. This is a companion module to
 L<Image::PNG::Libpng> by the same authors.
 
+B<The documentation below refers to functions which are not yet
+implemented.>
+
 =head1 FUNCTIONS
 
 =head2 alpha_unused
@@ -75,7 +78,8 @@ This function is not supported for versions of libpng earlier than
 
     my $png = bwpng (\@rows, sq => 20);
 
-Convert boolean-style data into a black and white PNG.
+Convert boolean-style data into a black and white PNG. A two-color PNG
+is also possible:
 
     bwpng (\@rows, black => '#CFF', white => '#C00');
 
@@ -87,7 +91,7 @@ Convert boolean-style data into a black and white PNG.
 
     my $gray_png = rgb2gray ('colorful.png');
 
-Convert RGB to gray.
+Convert an RGB PNG image to a grayscale one.
 
 Options:
 
@@ -106,7 +110,7 @@ structure for writing with the alpha channel data removed.
 
 =head2 split_alpha
 
-Copy from IPL.
+Unimplemented, due to be copied from L<Image::PNG::Libpng>.
 
 =head1 DEPENDENCIES
 
