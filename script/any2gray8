@@ -1,0 +1,41 @@
+#!/home/ben/software/install/bin/perl
+use warnings;
+use strict;
+use utf8;
+use FindBin '$Bin';
+use Image::PNG::Data 'any2gray8';
+use Getopt::Long;
+
+my $ok = GetOptions (
+
+);
+if (! $ok) {
+    usage ();
+    exit;
+}
+my @files = @ARGV;
+for my $file (@files) {
+    if (! -f $file) {
+	warn "$0: can't find a PNG file called '$file'.\n";
+	next;
+    }
+    my $wpng = any2gray8 ($file);
+    my $out = $file;
+    if (! ($out =~ s!\.png$!-gray8.png!)) {
+	warn "File name doesn't end in .png, skipping";
+	next;
+    }
+    $wpng->write_png_file ($out);
+}
+exit;
+
+sub usage
+{
+    print <<EOF;
+
+EOF
+}
+
+# Local variables:
+# mode: perl
+# End:

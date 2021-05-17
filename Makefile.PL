@@ -35,6 +35,9 @@ my %wm = (
     PREREQ_PM => {
 	'Image::PNG::Libpng' => '0.56',
     },
+    EXE_FILES => [
+	'script/any2gray8',
+    ],
     META_MERGE => {
 	'meta-spec' => {
 	    version => 2,
@@ -52,7 +55,6 @@ my %wm = (
 #		directory => ['tmpl', 'build', 'inc'],
 		file => ['t/IPNGDT.pm'],
 	    },
-
 #	    homepage => 'http://',
         },
 	
