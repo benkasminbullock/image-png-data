@@ -9,11 +9,13 @@ our @EXPORT_OK = qw/
     alpha_unused
     any2gray8
     bwpng
+    gray2alpha
     pngback
     pngpixelate
     pngmono
     rgb2gray
     rmalpha
+    similarity
 /;
 
 our %EXPORT_TAGS = (
@@ -402,6 +404,59 @@ sub rmalpha
 	carp "not all the pixels in '$file' are opaque";
 	return undef;
     }
+}
+
+sub similarity
+{
+    my ($filea, $fileb) = @_;
+    my $pnga = read_png_file ($filea);
+    my $pngb = read_png_file ($fileb);
+    my $hdra = $pnga->get_IHDR ();
+    my $hdrb = $pngb->get_IHDR ();
+    my %values;
+    for my $field (qw!height width!) {
+	if ($hdra->{$field} != $hdrb->{$field}) {
+	    carp "Different ${field}s $hdra->{$field} and $hdrb->{$field} between $filea and $fileb";
+	    return undef;
+	}
+	$values{$field} = $hdra->{$field};
+    }
+    for my $row (0..$values{height}-1) {
+	for my $pixel (0..$values{width} - 1) {
+	    
+	}
+    }
+
+}
+
+sub gray2alpha
+{
+    my ($file) = @_;
+    my $png = read_png_file ($file);
+    my $ihdr = $png->get_IHDR ();
+    if ($ihdr->{color_type} != PNG_COLOR_TYPE_GRAY) {
+	croak "Need a grayscale image";
+    }
+    if ($ihdr->{bit_depth} != 8) {
+	croak "Need an eight bit bit depth";
+    }
+    my $wpng = create_writer ("$file-ga");
+    my $whdr = {%$ihdr};
+    $whdr->{color_type} = PNG_COLOR_TYPE_GRAY_ALPHA;
+    $wpng->set_IHDR ($whdr);
+    my $inrows = $png->get_rows ();
+    my @rows;
+    for my $r (0..$whdr->{height} - 1) {
+	my $row;
+	my @inrow = split '', $inrows->[$r];
+	for my $pixel (@inrow) {
+	    my $alpha = chr (255 - ord ($pixel));
+	    $row .= chr (0) . $alpha;
+	}
+	push @rows, $row;
+    }
+    $wpng->set_rows (\@rows);
+    $wpng->write_png ();
 }
 
 sub vmsg
